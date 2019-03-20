@@ -10,9 +10,9 @@ class AudioDataSet:
         if load_csv:
             self.annotations = pd.read_csv('data/annotations.csv')
         else:
-            #self.annotations = self.load_audio_anotations()
+            self.annotations = self.load_audio_anotations()
             self.song_data = self.load_audio_files()
-            self.get_audio_features(self.song_data['53-1'])
+            #self.get_audio_features(self.song_data['53-1'])
 
     def load_audio_anotations(self):
         v_anotations = pd.read_csv('data/annotations/valence.csv')
@@ -70,8 +70,8 @@ class AudioDataSet:
                 songs[f"{file_name.replace('.mp3', '')}-{fragment_number}"] = song[start:(start + step)]
                 start += step
                 fragment_number += 1
-            if len(songs) > 16:
-                break
+            #if len(songs) > 16:
+                #break
         return songs
 
     def get_audio_features(self, song):
