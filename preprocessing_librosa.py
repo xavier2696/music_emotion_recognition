@@ -3,6 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 import csv
+from sklearn.model_selection import train_test_split
 
 class AudioDataSet:
 
@@ -27,13 +28,18 @@ class AudioDataSet:
             else:
                 self.dataset = self.combine_features_anotations()
 
+            #divide into training and testing
             self.x = self.dataset.drop('song_name', axis=1)
             self.x = self.x.drop('valence', axis=1)
             self.x = self.x.drop('arousal', axis=1)
-            self.valence = self.dataset.valence
-            self.arousal = self.dataset.arousal
-        #else:
-            # todo call methods for preparing unlabeled data
+            self.y = self.dataset[['valence', 'arousal']]
+            self.x_train, self.x_test, self.y_train, self.y_test = train_test_split(self.x,
+                                                                                    self.y,
+                                                                                    test_size=0.2,
+                                                                                    random_state=26)
+        else:
+            self.song_features = self.load_audio_files(output_file_name='unlabeled_features.csv')
+            self.x = self.song_features.drop('song_name', axis=1)
 
 
     def load_audio_anotations(self):
@@ -81,14 +87,13 @@ class AudioDataSet:
         return valence_fragments
 
 
-    def load_audio_files(self):
+    def load_audio_files(self, output_file_name='features.csv'):
         print('Loading audio features')
         songs = {}
         header = 'song_name rmse zero_crossing_rate spectral_centroid spectral_bandwidth rolloff'
         for i in range(1, 21):
             header += f' mfcc{i}'
         header = header.split()
-        output_file_name = 'features.csv'
         if os.path.exists(f'data/{output_file_name}'):
             os.remove(f'data/{output_file_name}')
         file = open(f'data/{output_file_name}', 'w', newline='')
