@@ -1,11 +1,12 @@
 import librosa
 import os
+import numpy as np
 import pandas as pd
 import csv
 
 class AudioDataSet:
 
-    def __init__(self, load_training_data=False, s_frequency=44100, threshold=2, directory='data/audio_pt4'):
+    def __init__(self, load_training_data=False, s_frequency=44100, threshold=2, directory='data/audio_pt1'):
         self.s_frequency = s_frequency
         self.threshold = threshold
         self.directory = directory
@@ -20,9 +21,7 @@ class AudioDataSet:
             if os.path.exists('data/features.csv'):
                 self.song_features = pd.read_csv('data/features.csv')
             else:
-                if not os.path.exists('data/features_1.csv'):
-                    self.song_features = self.load_audio_files()
-                self.song_features = self.combine_audio_features_dataframes()
+                self.song_features = self.load_audio_files()
             if os.path.exists('data/dataset.csv'):
                 self.dataset = pd.read_csv('data/dataset.csv')
             else:
@@ -125,30 +124,24 @@ class AudioDataSet:
                     writer.writerow(to_append.split())
             print(f"Progress: processed song# {cont} filename: {file_name}")
             cont += 1
-            #if len(songs) > 16:
+            #if len(songs) > 2:
                 #break
         features = pd.read_csv(f'data/{output_file_name}')
         return features
 
     def get_audio_features(self, song):
         features = []
-        rmse = librosa.feature.rmse(song, frame_length=self.s_frequency * self.threshold + 1,
-                                    hop_length=self.s_frequency * self.threshold + 1)
-        features.append(rmse[0][0])
-        zcr = librosa.feature.zero_crossing_rate(song, frame_length=self.s_frequency * self.threshold + 1,
-                                                 hop_length=self.s_frequency * self.threshold + 1)
-        features.append(zcr[0][0])
-        spec_cent = librosa.feature.spectral_centroid(y=song, sr=self.s_frequency,
-                                                      hop_length=self.s_frequency * self.threshold + 1)
-        features.append(spec_cent[0][0])
-        spec_bw = librosa.feature.spectral_bandwidth(y=song, sr=self.s_frequency,
-                                                     hop_length=self.s_frequency * self.threshold + 1)
-        features.append(spec_bw[0][0])
-        rolloff = librosa.feature.spectral_rolloff(y=song, sr=self.s_frequency,
-                                                   hop_length=self.s_frequency * self.threshold + 1)
-        features.append(rolloff[0][0])
-        mfcc = librosa.feature.mfcc(y=song, sr=self.s_frequency,
-                                    hop_length=self.s_frequency * self.threshold + 1)
+        rmse = librosa.feature.rmse(song)
+        features.append(np.mean(rmse))
+        zcr = librosa.feature.zero_crossing_rate(song)
+        features.append(np.mean(zcr))
+        spec_cent = librosa.feature.spectral_centroid(y=song, sr=self.s_frequency)
+        features.append(np.mean(spec_cent))
+        spec_bw = librosa.feature.spectral_bandwidth(y=song, sr=self.s_frequency)
+        features.append(np.mean(spec_bw))
+        rolloff = librosa.feature.spectral_rolloff(y=song, sr=self.s_frequency)
+        features.append(np.mean(rolloff))
+        mfcc = librosa.feature.mfcc(y=song, sr=self.s_frequency)
         coefficients = []
         for coefficient in mfcc:
             coefficients.append(coefficient[0])
@@ -160,16 +153,6 @@ class AudioDataSet:
         dataset = self.song_features.merge(self.annotations, how='inner', on='song_name')
         dataset.to_csv('data/dataset.csv',  index=False)
         return dataset
-
-    def combine_audio_features_dataframes(self):
-        print('Combining feature dataframes')
-        df1 = pd.read_csv('data/features_1.csv')
-        df2 = pd.read_csv('data/features_2.csv')
-        df3 = pd.read_csv('data/features_3.csv')
-        df4 = pd.read_csv('data/features_4.csv')
-        combined_df = pd.concat([df1, df2, df3, df4])
-        combined_df.to_csv('data/features.csv', index=False)
-        return combined_df
 
 
 
