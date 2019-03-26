@@ -9,7 +9,8 @@ class NeuralNet(torch.nn.Module):
         """
         super(NeuralNet, self).__init__()
         self.linear1 = torch.nn.Linear(D_in, 256)
-        self.linear2 = torch.nn.Linear(256, D_out)
+        self.linear2 = torch.nn.Linear(256, 64)
+        self.linear3 = torch.nn.Linear(64, D_out)
 
     def forward(self, x):
         """
@@ -18,6 +19,7 @@ class NeuralNet(torch.nn.Module):
         well as arbitrary operators on Tensors.
         """
         #h_softmax = torch.nn.functional.softmax(self.linear1(x), dim=0)
-        h_relu = self.linear1(x).clamp(min=0) #clamp(min=0) is ReLu, torch.nn.functional.relu(self.linear1(x))
-        y_pred = self.linear2(h_relu)
+        h_relu1 = self.linear1(x).clamp(min=0) #clamp(min=0) is ReLu, torch.nn.functional.relu(self.linear1(x))
+        h_relu2 = self.linear2(h_relu1).clamp(min=0)
+        y_pred = self.linear3(h_relu2)
         return y_pred
