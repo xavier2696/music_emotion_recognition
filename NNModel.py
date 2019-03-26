@@ -2,15 +2,15 @@ import torch
 
 
 class NeuralNet(torch.nn.Module):
-    def __init__(self, D_in, D_out):
+    def __init__(self, d_in, d_out):
         """
         In the constructor we instantiate two nn.Linear modules and assign them as
         member variables.
         """
         super(NeuralNet, self).__init__()
-        self.linear1 = torch.nn.Linear(D_in, 256)
+        self.linear1 = torch.nn.Linear(d_in, 256)
         self.linear2 = torch.nn.Linear(256, 64)
-        self.linear3 = torch.nn.Linear(64, D_out)
+        self.linear3 = torch.nn.Linear(64, d_out)
 
     def forward(self, x):
         """

@@ -53,7 +53,7 @@ training = True
 v_model = NeuralNet(n_in, n_out)
 if training:
     v_model = v_model.to(device)
-    train_model(v_model, x_train, y_v_train, 'valence_model', 500)
+    train_model(v_model, x_train, y_v_train, 'valence_model', 10000)
 else:
     v_model.load_state_dict(torch.load('valence_model.pt'))
     v_model = v_model.to(device)
@@ -63,7 +63,7 @@ training = True
 a_model = NeuralNet(n_in, n_out)
 if training:
     a_model = a_model.to(device)
-    train_model(a_model, x_train, y_a_train, 'arousal_model', 500)
+    train_model(a_model, x_train, y_a_train, 'arousal_model', 10000)
 else:
     a_model.load_state_dict(torch.load('arousal_model.pt'))
     a_model = a_model.to(device)
