@@ -27,7 +27,6 @@ def train_model(model, x_train, y_train, file_name, iterations):
         optimizer.step()
 
     torch.save(model.state_dict(), f'{file_name}.pt')
-
 # main code
 complete_dataset = AudioDataSet(load_training_data=True)
 
@@ -50,23 +49,26 @@ y_a_test = y_a_test.type('torch.FloatTensor').to(device)
 n_in = x_train.shape[1]
 n_out = 1
 
+training = True
 v_model = NeuralNet(n_in, n_out)
-#load model
-#v_model.load_state_dict(torch.load('valence_model.pt'))
-#v_model = v_model.to(device)
-#v_model.eval()
-#train model
-v_model = v_model.to(device)
-train_model(v_model, x_train, y_v_train, 'valence_model', 5000)
+if training:
+    v_model = v_model.to(device)
+    train_model(v_model, x_train, y_v_train, 'valence_model', 500)
+else:
+    v_model.load_state_dict(torch.load('valence_model.pt'))
+    v_model = v_model.to(device)
+    v_model.eval()
 
+training = True
 a_model = NeuralNet(n_in, n_out)
-#load model
-#a_model.load_state_dict(torch.load('arousal_model.pt'))
-#a_model = a_model.to(device)
-#a_model.eval()
-#train model
-a_model = a_model.to(device)
-train_model(a_model, x_train, y_a_train, 'arousal_model', 5000)
+if training:
+    a_model = a_model.to(device)
+    train_model(a_model, x_train, y_a_train, 'arousal_model', 500)
+else:
+    a_model.load_state_dict(torch.load('arousal_model.pt'))
+    a_model = a_model.to(device)
+    a_model.eval()
+
 
 #see results
 with torch.no_grad():

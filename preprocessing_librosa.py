@@ -152,6 +152,7 @@ class AudioDataSet:
         features.append(np.mean(rolloff))
         spec_flatness = librosa.feature.spectral_flatness(y=song)
         features.append(np.mean(spec_flatness))
+        # add new features here
         tonnetz = librosa.feature.tonnetz(y=song, sr=self.s_frequency)
         tonal_features = []
         for tonal_feature in tonnetz:
