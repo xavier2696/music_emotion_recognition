@@ -18,7 +18,7 @@ def train_model(model, x_train, y_train, file_name, iterations):
 
         # Compute and print loss
         loss = torch.sqrt(criterion(y_pred, y_train)) # rmse
-        if t % 100 == 0:
+        if t % 100 == 0 or t == iterations-1:
             print("Iteration:", t, "Loss:", loss.item())
 
         # Zero gradients, perform a backward pass, and update the weights.
