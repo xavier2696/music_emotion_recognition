@@ -52,21 +52,21 @@ n_out = 1
 
 v_model = NeuralNet(n_in, n_out)
 #load model
-v_model.load_state_dict(torch.load('valence_model.pt'))
-v_model = v_model.to(device)
-v_model.eval()
-#train model
+#v_model.load_state_dict(torch.load('valence_model.pt'))
 #v_model = v_model.to(device)
-#train_model(v_model, x_train, y_v_train, 'valence_model', 5000)
+#v_model.eval()
+#train model
+v_model = v_model.to(device)
+train_model(v_model, x_train, y_v_train, 'valence_model', 5000)
 
 a_model = NeuralNet(n_in, n_out)
 #load model
-a_model.load_state_dict(torch.load('arousal_model.pt'))
-a_model = a_model.to(device)
-a_model.eval()
-#train model
+#a_model.load_state_dict(torch.load('arousal_model.pt'))
 #a_model = a_model.to(device)
-#train_model(a_model, x_train, y_a_train, 'arousal_model', 5000)
+#a_model.eval()
+#train model
+a_model = a_model.to(device)
+train_model(a_model, x_train, y_a_train, 'arousal_model', 5000)
 
 #see results
 with torch.no_grad():

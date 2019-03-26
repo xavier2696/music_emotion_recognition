@@ -7,7 +7,8 @@ from sklearn.model_selection import train_test_split
 
 class AudioDataSet:
 
-    def __init__(self, load_training_data=False, s_frequency=44100, threshold=2, directory='data/audio_pt1'):
+    def __init__(self, load_training_data=False, s_frequency=44100, threshold=2, directory='data/audio_pt1',
+                 f_output_file_name='features.csv'):
         self.s_frequency = s_frequency
         self.threshold = threshold
         self.directory = directory
@@ -19,10 +20,10 @@ class AudioDataSet:
                 self.annotations = pd.read_csv('data/annotations.csv')
             else:
                 self.annotations = self.load_audio_anotations()
-            if os.path.exists('data/features.csv'):
-                self.song_features = pd.read_csv('data/features.csv')
+            if os.path.exists(f'data/{f_output_file_name}'):
+                self.song_features = pd.read_csv(f'data/{f_output_file_name}')
             else:
-                self.song_features = self.load_audio_files()
+                self.song_features = self.load_audio_files(output_file_name=f_output_file_name)
             if os.path.exists('data/dataset.csv'):
                 self.dataset = pd.read_csv('data/dataset.csv')
             else:
@@ -90,7 +91,10 @@ class AudioDataSet:
     def load_audio_files(self, output_file_name='features.csv'):
         print('Loading audio features')
         songs = {}
-        header = 'song_name rmse zero_crossing_rate spectral_centroid spectral_bandwidth rolloff'
+        header = 'song_name rmse zero_crossing_rate spectral_centroid spectral_bandwidth \
+                  rolloff spectral_flatness'
+        for i in range(1, 7):
+            header += f' tonal{i}'
         for i in range(1, 21):
             header += f' mfcc{i}'
         header = header.split()
@@ -146,6 +150,13 @@ class AudioDataSet:
         features.append(np.mean(spec_bw))
         rolloff = librosa.feature.spectral_rolloff(y=song, sr=self.s_frequency)
         features.append(np.mean(rolloff))
+        spec_flatness = librosa.feature.spectral_flatness(y=song)
+        features.append(np.mean(spec_flatness))
+        tonnetz = librosa.feature.tonnetz(y=song, sr=self.s_frequency)
+        tonal_features = []
+        for tonal_feature in tonnetz:
+            tonal_features.append(np.mean(tonal_feature))
+        features.append(tonal_features)
         mfcc = librosa.feature.mfcc(y=song, sr=self.s_frequency)
         coefficients = []
         for coefficient in mfcc:
