@@ -8,9 +8,8 @@ class NeuralNet(torch.nn.Module):
         member variables.
         """
         super(NeuralNet, self).__init__()
-        self.linear1 = torch.nn.Linear(d_in, 256)
-        self.linear2 = torch.nn.Linear(256, 64)
-        self.linear3 = torch.nn.Linear(64, d_out)
+        self.linear1 = torch.nn.Linear(d_in, 128)
+        self.linear2 = torch.nn.Linear(128, d_out)
 
     def forward(self, x):
         """
@@ -20,6 +19,6 @@ class NeuralNet(torch.nn.Module):
         """
         #h_softmax = torch.nn.functional.softmax(self.linear1(x), dim=0)
         h_relu1 = self.linear1(x).clamp(min=0) #clamp(min=0) is ReLu, torch.nn.functional.relu(self.linear1(x))
-        h_relu2 = self.linear2(h_relu1).clamp(min=0)
-        y_pred = self.linear3(h_relu2)
+        #h_relu2 = self.linear2(h_relu1).clamp(min=0)
+        y_pred = self.linear2(h_relu1)
         return y_pred

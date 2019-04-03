@@ -58,7 +58,8 @@ class AudioDataSet:
             column_sum = 0
             current_columns_grouped = 0
             current_fragment = 1
-            while start_time <= 44500:
+            #while start_time <= 44500:
+            while f'sample_{start_time}ms' in row and row[f'sample_{start_time}ms'] != '':
                 column_sum += row[f'sample_{start_time}ms']
                 current_columns_grouped += 1
                 start_time += 500
