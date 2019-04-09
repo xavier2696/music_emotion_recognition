@@ -8,7 +8,7 @@ from sklearn.model_selection import train_test_split
 class AudioDataSet:
 
     def __init__(self, load_training_data=False, s_frequency=44100, threshold=2, directory='data/audio_pt1',
-                 f_output_file_name='features.csv'):
+                 f_output_file_name='data/features.csv'):
         self.s_frequency = s_frequency
         self.threshold = threshold
         self.directory = directory
@@ -20,8 +20,8 @@ class AudioDataSet:
                 self.annotations = pd.read_csv('data/annotations.csv')
             else:
                 self.annotations = self.load_audio_anotations()
-            if os.path.exists(f'data/{f_output_file_name}'):
-                self.song_features = pd.read_csv(f'data/{f_output_file_name}')
+            if os.path.exists(f'{f_output_file_name}'):
+                self.song_features = pd.read_csv(f'{f_output_file_name}')
             else:
                 self.song_features = self.load_audio_files(output_file_name=f_output_file_name)
             if os.path.exists('data/dataset.csv'):
@@ -39,7 +39,10 @@ class AudioDataSet:
                                                                                     test_size=0.2,
                                                                                     random_state=26)
         else:
-            self.song_features = self.load_audio_files(output_file_name='unlabeled_features.csv')
+            if os.path.exists(f'{f_output_file_name}'):
+                self.song_features = pd.read_csv(f'{f_output_file_name}')
+            else:
+                self.song_features = self.load_audio_files(output_file_name=f_output_file_name, load_train_data=False)
             self.x = self.song_features.drop('song_name', axis=1)
 
 
@@ -89,7 +92,7 @@ class AudioDataSet:
         return valence_fragments
 
 
-    def load_audio_files(self, output_file_name='features.csv'):
+    def load_audio_files(self, output_file_name='data/features.csv', load_train_data=True):
         print('Loading audio features')
         songs = {}
         header = 'song_name rmse zero_crossing_rate spectral_centroid spectral_bandwidth \
@@ -99,9 +102,9 @@ class AudioDataSet:
         for i in range(1, 21):
             header += f' mfcc{i}'
         header = header.split()
-        if os.path.exists(f'data/{output_file_name}'):
-            os.remove(f'data/{output_file_name}')
-        file = open(f'data/{output_file_name}', 'w', newline='')
+        if os.path.exists(f'{output_file_name}'):
+            os.remove(f'{output_file_name}')
+        file = open(f'{output_file_name}', 'w', newline='')
         with file:
             writer = csv.writer(file)
             writer.writerow(header)
@@ -110,25 +113,40 @@ class AudioDataSet:
             print(f"Progress: filename: {file_name}")
             song_name = f'{self.directory}/{file_name}'
             song, sr = librosa.load(song_name, sr=self.s_frequency)
-            start = 15 * self.s_frequency  # annotations start from second 15
-            fragment_number = 1
-            step = self.threshold * self.s_frequency
-            while (start + step < len(song)):
-                fragment = song[start:(start + step)]
-                fragment_name = f"{file_name.replace('.mp3', '')}-{fragment_number}"
-                songs[fragment_name] = fragment
-                start += step
-                fragment_number += 1
-                #get features
-                features = self.get_audio_features(fragment)
-                to_append = f'{fragment_name}'
+            if load_train_data:
+                start = 15 * self.s_frequency  # annotations start from second 15
+                fragment_number = 1
+                step = self.threshold * self.s_frequency
+                while (start + step < len(song)):
+                    fragment = song[start:(start + step)]
+                    fragment_name = f"{file_name.replace('.mp3', '')}-{fragment_number}"
+                    songs[fragment_name] = fragment
+                    start += step
+                    fragment_number += 1
+                    #get features
+                    features = self.get_audio_features(fragment)
+                    to_append = f'{fragment_name}'
+                    for feature in features:
+                        if isinstance(feature, list):
+                            for sub_feature in feature:
+                                to_append += f' {sub_feature}'
+                        else:
+                            to_append += f' {feature}'
+                    file = open(f'{output_file_name}', 'a', newline='')
+                    with file:
+                        writer = csv.writer(file)
+                        writer.writerow(to_append.split())
+            else:
+                # get features
+                features = self.get_audio_features(song)
+                to_append = f"{file_name.replace('.mp3','')}"
                 for feature in features:
                     if isinstance(feature, list):
                         for sub_feature in feature:
                             to_append += f' {sub_feature}'
                     else:
                         to_append += f' {feature}'
-                file = open(f'data/{output_file_name}', 'a', newline='')
+                file = open(f'{output_file_name}', 'a', newline='')
                 with file:
                     writer = csv.writer(file)
                     writer.writerow(to_append.split())
@@ -136,7 +154,7 @@ class AudioDataSet:
             cont += 1
             #if len(songs) > 2:
                 #break
-        features = pd.read_csv(f'data/{output_file_name}')
+        features = pd.read_csv(f'{output_file_name}')
         return features
 
     def get_audio_features(self, song):
