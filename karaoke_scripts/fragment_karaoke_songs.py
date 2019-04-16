@@ -1,5 +1,7 @@
 import os
 from pydub import AudioSegment
+import re
+import pandas as pd
 
 def split_audio_files(metadata):
     print('Splitting songs')
@@ -24,6 +26,7 @@ for file_name in os.listdir("../data/karaoke/metadata"):
         time_annotations = []
         for cnt, line in enumerate(fp):
             if len(line) > 1 and line[0] == '[' and line[1].isdigit():
+
                 begin_number = ""
                 cont = 1
                 while cont < len(line) and line[cont].isdigit():
@@ -48,7 +51,22 @@ for file_name in os.listdir("../data/karaoke/metadata"):
 
         metadata[file_name.replace('.txt', '')] = time_annotations
 
-print(metadata)
+fragment_names = []
+sentences = []
+for file_name in os.listdir("../data/karaoke/metadata"):
+    sentence_number = 1
+    with open(f"../data/karaoke/metadata/{file_name}") as fp:
+        time_annotations = []
+        for cnt, line in enumerate(fp):
+            if len(line) > 1 and line[0] == '[' and line[1].isdigit():
+                sentence = re.sub(r'[\[\]\d<>,]', '', line)
+                sentences.append(sentence)
+                fragment_names.append(f"{file_name.replace('.txt', '')}-{sentence_number}")
+            sentence_number += 1
+
+sentences_df = pd.DataFrame({'fragment_id': fragment_names, 'sentence': sentences})
+sentences_df.to_csv('../data/karaoke/sentences.csv', index=False)
+
 split_audio_files(metadata)
 
 

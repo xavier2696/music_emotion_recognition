@@ -1,10 +1,11 @@
 from NNModel import NeuralNet
 from LSTMModel import LSTM
+from LSTMModel2 import SimpleRNN
 from preprocessing_librosa import AudioDataSet
 import torch
 import pandas as pd
 
-g_train = True
+g_train = False
 lstm = True
 gpu_number = 1
 
@@ -25,14 +26,17 @@ def train_model(model, x_train, y_train, file_name, iterations):
             for i in range(0, x_train.shape[0]):
                 model.zero_grad()
                 y_pred = model(x_train[i:(i + 1)])
+                y_pred = y_pred[0][0].type('torch.FloatTensor').to(device)
+                #print(y_pred)
+                #print(y_train[i:(i+1)])
                 y_predictions.append(y_pred.item())
                 loss = torch.sqrt(criterion(y_pred, y_train[i:(i+1)]))
 
                 # Zero gradients, perform a backward pass, and update the weights.
-                optimizer.zero_grad()
+                #optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
-            if (t + 1) % 10 == 0 or t == 0:
+            if (t + 1) % 1 == 0 or t == 0:
                 loss_function = torch.nn.MSELoss()
                 y_predictions = torch.tensor(y_predictions)
                 y_predictions = y_predictions.type('torch.FloatTensor').to(device)
@@ -109,22 +113,27 @@ n_in = x_train.shape[1]
 n_out = 1
 
 training = g_train
-# v_model = NeuralNet(n_in, n_out)
-v_model = LSTM(n_in, 256, output_dim=n_out, batch_size=1)
+v_model = NeuralNet(n_in, n_out)
+if lstm:
+    v_model = SimpleRNN(n_in)
+    #v_model = LSTM(n_in, 256, output_dim=n_out, batch_size=1)
+
 if training:
     v_model = v_model.to(device)
-    train_model(v_model, x_train, y_v_train, 'valence_model', 100)
+    train_model(v_model, x_train, y_v_train, 'valence_model', 50)
 else:
     v_model.load_state_dict(torch.load('models/valence_model.pt'))
     v_model = v_model.to(device)
     v_model.eval()
 
 training = g_train
-#a_model = NeuralNet(n_in, n_out)
-a_model = LSTM(n_in, 256, output_dim=n_out, batch_size=1)
+a_model = NeuralNet(n_in, n_out)
+if lstm:
+    #a_model = LSTM(n_in, 256, output_dim=n_out, batch_size=1)
+    a_model = SimpleRNN(n_in)
 if training:
     a_model = a_model.to(device)
-    train_model(a_model, x_train, y_a_train, 'arousal_model', 100)
+    train_model(a_model, x_train, y_a_train, 'arousal_model', 50)
 else:
     a_model.load_state_dict(torch.load('models/arousal_model.pt'))
     a_model = a_model.to(device)
@@ -144,6 +153,7 @@ with torch.no_grad():
         v_predicted_train = v_predicted_train.type('torch.FloatTensor').to(device)
     else:
         v_predicted_train = v_model(x_train)
+    #print(v_predicted_train)
     v_predicted_train = [x[0].item() for x in v_predicted_train]
     v_predicted_train = torch.tensor(v_predicted_train)
     v_predicted_train = v_predicted_train.type('torch.FloatTensor').to(device)

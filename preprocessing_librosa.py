@@ -7,7 +7,7 @@ from sklearn.model_selection import train_test_split
 
 class AudioDataSet:
 
-    def __init__(self, load_training_data=False, s_frequency=44100, threshold=2, directory='data/audio_pt1',
+    def __init__(self, load_training_data=False, s_frequency=44100, threshold=5, directory='data/audio_pt1',
                  f_output_file_name='data/features.csv'):
         self.s_frequency = s_frequency
         self.threshold = threshold
