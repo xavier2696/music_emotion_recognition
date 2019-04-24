@@ -18,21 +18,17 @@ class LSTMModel(nn.Module):
         # Readout layer
         self.fc = nn.Linear(hidden_dim, output_dim)
 
+        self.device = torch.device(f"cuda:{1}" if torch.cuda.is_available() else "cpu")
+
     def forward(self, x):
         # Initialize hidden state with zeros
-        h0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()
+        h0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).to(self.device).requires_grad_()
 
         # Initialize cell state
-        c0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).requires_grad_()
+        c0 = torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).to(self.device).requires_grad_()
 
-        # 28 time steps
-        # We need to detach as we are doing truncated backpropagation through time (BPTT)
-        # If we don't, we'll backprop all the way to the start even after going through another batch
         out, (hn, cn) = self.lstm(x, (h0.detach(), c0.detach()))
 
         # Index hidden state of last time step
-        # out.size() --> 100, 28, 100
-        # out[:, -1, :] --> 100, 100 --> just want last time step hidden states!
         out = self.fc(out[:, -1, :])
-        # out.size() --> 100, 10
         return out

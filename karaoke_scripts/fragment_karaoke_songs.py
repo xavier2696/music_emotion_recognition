@@ -62,11 +62,11 @@ for file_name in os.listdir("../data/karaoke/metadata"):
                 sentence = re.sub(r'[\[\]\d<>,]', '', line)
                 sentences.append(sentence)
                 fragment_names.append(f"{file_name.replace('.txt', '')}-{sentence_number}")
-            sentence_number += 1
+                sentence_number += 1
 
 sentences_df = pd.DataFrame({'fragment_id': fragment_names, 'sentence': sentences})
 sentences_df.to_csv('../data/karaoke/sentences.csv', index=False)
 
-split_audio_files(metadata)
+#split_audio_files(metadata)
 
 
