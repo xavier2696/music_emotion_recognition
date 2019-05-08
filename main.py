@@ -2,7 +2,7 @@ from NNModel import NeuralNet
 from LSTMModel import LSTM
 from LSTMModel2 import SimpleRNN
 from LSTMModel3 import LSTMModel
-from preprocessing_librosa import AudioDataSet
+from preprocessing.preprocessing_open_smile import AudioDataSet
 import torch
 import pandas as pd
 
@@ -132,13 +132,13 @@ n_out = 1
 training = g_train
 v_model = NeuralNet(n_in, n_out)
 if lstm:
-    v_model = LSTMModel(n_in, 128, 1, n_out)
+    v_model = LSTMModel(n_in, 256, 1, n_out)
     #v_model = SimpleRNN(n_in)
     #v_model = LSTM(n_in, 256, output_dim=n_out, batch_size=1)
 
 if training:
     v_model = v_model.to(device)
-    train_model(v_model, x_train, y_v_train, 'valence_model', 1000)
+    train_model(v_model, x_train, y_v_train, 'valence_model', 1500)
 else:
     v_model.load_state_dict(torch.load('models/valence_model.pt'))
     v_model = v_model.to(device)
@@ -147,12 +147,12 @@ else:
 training = g_train
 a_model = NeuralNet(n_in, n_out)
 if lstm:
-    a_model = LSTMModel(n_in, 128, 1, n_out)
+    a_model = LSTMModel(n_in, 256, 1, n_out)
     #a_model = LSTM(n_in, 256, output_dim=n_out, batch_size=1)
     #a_model = SimpleRNN(n_in)
 if training:
     a_model = a_model.to(device)
-    train_model(a_model, x_train, y_a_train, 'arousal_model', 1000)
+    train_model(a_model, x_train, y_a_train, 'arousal_model', 1500)
 else:
     a_model.load_state_dict(torch.load('models/arousal_model.pt'))
     a_model = a_model.to(device)
@@ -251,4 +251,6 @@ with torch.no_grad():
     ground_truth_df = pd.DataFrame(
         {'valence': complete_dataset.y_test.valence, 'arousal': complete_dataset.y_test.arousal})
     show_results(prediction_df, ground_truth_df)
+    print(a_predicted[0:100:10])
+    print(v_predicted[0:100:10])
 

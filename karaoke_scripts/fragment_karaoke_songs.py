@@ -67,6 +67,6 @@ for file_name in os.listdir("../data/karaoke/metadata"):
 sentences_df = pd.DataFrame({'fragment_id': fragment_names, 'sentence': sentences})
 sentences_df.to_csv('../data/karaoke/sentences.csv', index=False)
 
-#split_audio_files(metadata)
+split_audio_files(metadata)
 
 
